@@ -3,7 +3,8 @@ relative_files = True
 branch = True
 omit =
     # omit the tests themselves
-    */CI/*
+    */tests/*
+    */tmp/*
 
 [report]
 # Regexes for lines to exclude from consideration

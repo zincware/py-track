@@ -6,7 +6,7 @@ SPDX-License-Identifier: EPL-2.0
 
 Copyright Contributors to the Zincware Project.
 
-Description: List of functions that are applied to serialize and deserialize Python Objects
+Description: List of functions that are used to serialize and deserialize Python Objects
 
 Notes
 -----
@@ -16,11 +16,14 @@ Notes
     Please consider using DVC.outs() and save them in a binary file format.
 
 """
+import importlib
+import inspect
 import logging
 
 import znjson
 
-from zntrack.utils.types import ZnTrackStage, ZnTrackType
+from zntrack.core.base import Node
+from zntrack.utils.types import ZnTrackStage
 
 log = logging.getLogger(__name__)
 
@@ -28,46 +31,67 @@ log = logging.getLogger(__name__)
 class ZnTrackTypeConverter(znjson.ConverterBase):
     """Main Serializer for ZnTrack Nodes, e.g. as dependencies"""
 
-    instance = ZnTrackType
+    instance = Node
     representation = "ZnTrackType"
 
     def _encode(self, obj) -> dict:
         """Convert Node to serializable dict"""
         return {
-            "module": obj.zntrack.module,
+            "module": obj.module,
             "cls": obj.__class__.__name__,
-            "name": obj.zntrack.stage_name,
+            "name": obj.node_name,
         }
 
-    def _decode(self, value: dict):
-        """Prepare serialized Node to be converted back"""
-        return ZnTrackStage(**value)
+    def _decode(self, value: dict) -> Node:
+        """return serialized Node"""
+        return ZnTrackStage(**value).load_zntrack_node()
 
     def __eq__(self, other):
         """Overwrite check, because checking .zntrack equality"""
-        if hasattr(other, "zntrack"):
-            return isinstance(other.zntrack, self.instance)
-        return False
+        return isinstance(other, Node)
 
 
-class ZnTrackStageConverter(znjson.ConverterBase):
-    """
+class MethodConverter(znjson.ConverterBase):
 
-    Required, because when loading the .zntrack file and then serializing it again
-    some classes might not be loaded but in the state of ZnTrackStage instead.
-    """
+    representation = "zn.method"
 
-    instance = ZnTrackStage
-    representation = "ZnTrackStage"
-
-    def _encode(self, obj: ZnTrackStage):
-        """Convert ZnTrackStage to dict"""
-        return {
-            "module": obj.module,
-            "cls": obj.cls,
-            "name": obj.name,
+    def _encode(self, obj):
+        methods = {
+            "module": obj.__class__.__module__,
+            "name": obj.__class__.__name__,
+            "kwargs": {},
         }
 
+        # If using Jupyter Notebooks
+        # if instance.zntrack.nb_mode:
+        #     # if the class is originally imported from main,
+        #     #  it will be copied to the same module path as the
+        #     #  ZnTrack Node source code.
+        #     if methods["module"] == "__main__":
+        #         methods["module"] = instance.zntrack.module
+
+        for key in inspect.signature(obj.__class__.__init__).parameters:
+            if key == "self":
+                continue
+            if key in ["args", "kwargs"]:
+                log.error(f"Can not convert {key}!")
+                continue
+            try:
+                methods["kwargs"][key] = getattr(obj, key)
+            except AttributeError:
+                raise AttributeError(
+                    f"Could not find {key} in passed method! Please use "
+                    "@check_signature from ZnTrack to check that the method signature"
+                    " fits the method attributes"
+                )
+
+        return methods
+
     def _decode(self, value: dict):
-        """Convert dict to ZnTrackStage"""
-        return ZnTrackStage(**value)
+        module = importlib.import_module(value["module"])
+        cls = getattr(module, value["name"])
+
+        return cls(**value["kwargs"])
+
+    def __eq__(self, other):
+        return other.znjson_zn_method

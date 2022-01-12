@@ -17,22 +17,13 @@ class NoneType:
     This class is never used outside of Node, so it can be used
     to identify if the value has been changed via
     >>> value = NoneType
-    >>> if value == NoneType:
+    >>> if value is NoneType:
     >>>     print("value is unchanged")
     >>> value = None
-    >>> if value != NoneType:
+    >>> if value is not NoneType:
     >>>     print("value changed")
 
     which can not be done with any built in python type
-    """
-
-    pass
-
-
-class ZnTrackType:
-    """Class to check against to see if it is part of Node
-
-    In comparison to ZnTrackStage this is used to identify initiated stages
     """
 
     pass
@@ -72,4 +63,4 @@ class ZnTrackStage:
         module = import_module(self.module)
         cls = getattr(module, self.cls)
 
-        return cls(load=True, name=self.name)
+        return cls.load(name=self.name)

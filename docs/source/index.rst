@@ -51,10 +51,9 @@ information or write an issue on Github for https://github.com/zincware/ZnTrack
 
 .. toctree::
    :maxdepth: 1
-   :caption: API Guide:
+   :caption: Migration to v0.3:
 
-   modules_and_classes
-
+   _tutorials/migration_guide_v3
 
 
 Indices and tables

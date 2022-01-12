@@ -11,11 +11,10 @@ Description: zn.<option>
 The following can be used to store e.g. metrics directly without
 defining and writing to a file
 """
-import importlib
-import inspect
 import logging
 
 from zntrack.core.parameter import ZnTrackOption
+from zntrack.descriptor import Metadata
 
 log = logging.getLogger(__name__)
 
@@ -27,18 +26,23 @@ log = logging.getLogger(__name__)
 
 
 class outs(ZnTrackOption):
-    option = "outs"
-    load = True
+    metadata = Metadata(dvc_option="outs", zntrack_type="zn")
 
 
-# class plots(ZnTrackOption):
-#     option = "plots"
-#     load = True
+class deps(ZnTrackOption):
+    metadata = Metadata(dvc_option="deps", zntrack_type="deps")
 
 
 class metrics(ZnTrackOption):
-    option = "metrics_no_cache"
-    load = True
+    metadata = Metadata(dvc_option="metrics_no_cache", zntrack_type="zn")
+
+
+class params(ZnTrackOption):
+    metadata = Metadata(dvc_option="params", zntrack_type="params")
+
+
+class iterable(ZnTrackOption):
+    metadata = Metadata(dvc_option="params", zntrack_type="iterable")
 
 
 class Method(ZnTrackOption):
@@ -53,62 +57,20 @@ class Method(ZnTrackOption):
     >>> class HelloWorld:
     >>>     def __init__(self, name):
     >>>         self.name = name
-    >>> @Node()
-    >>> class MyNode
+    >>>
+    >>> class MyNode(zntrack.Node)
     >>>     my_method = Method()
     >>> MyNode().my_method = HelloWorld(name="Max")
 
     """
 
-    option = "params"
-    load = False
+    metadata = Metadata(dvc_option="params", zntrack_type="method")
 
-    def _get(self, instance, owner):
-        """Custom Get for methods
-
-        Returns
-        -------
-        object:
-            An instance of the passed classed instantiated with the correct arguments.
-        """
-        methods = instance.__dict__[self.name]
-        module = importlib.import_module(methods["module"])
-        cls = getattr(module, methods["name"])
-
-        return cls(**methods["kwargs"])
-
-    def _set(self, instance, value: object):
-        """Custom Set of Methods
-
-        Save module, name and kwargs from the class state
-        """
-        methods = {
-            "module": value.__class__.__module__,
-            "name": value.__class__.__name__,
-            "kwargs": {},
-        }
-
-        # If using Jupyter Notebooks
-        if instance.zntrack.nb_mode:
-            # if the class is originally imported from main,
-            #  it will be copied to the same module path as the
-            #  ZnTrack Node source code.
-            if methods["module"] == "__main__":
-                methods["module"] = instance.zntrack.module
-
-        for key in inspect.signature(value.__class__.__init__).parameters:
-            if key == "self":
-                continue
-            if key in ["args", "kwargs"]:
-                log.error(f"Can not convert {key}!")
-                continue
-            try:
-                methods["kwargs"][key] = getattr(value, key)
-            except AttributeError:
-                raise AttributeError(
-                    f"Could not find {key} in passed method! Please use "
-                    f"@check_signature from ZnTrack to check that the method signature"
-                    f" fits the method attributes"
-                )
-
-        instance.__dict__[self.name] = methods
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        log.debug(f"Get {self} from {instance}")
+        value = instance.__dict__.get(self.name, self.default_value)
+        # Set some attribute for the serializer
+        value.znjson_zn_method = True
+        return value

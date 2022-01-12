@@ -24,19 +24,17 @@ DVC Options, such as parameters, input dependencies and output files are class a
 
 .. code-block:: py
 
-    from zntrack import Node, dvc
+    from zntrack import Node, zn
     from random import randrange
 
-
-    @Node()
-    class HelloWorld:
+    class HelloWorld(Node):
         """Define a ZnTrack Node"""
         # parameter to be tracked
-        max_number = dvc.params()
+        max_number = zn.params()
         # parameter to store as output
-        random_number = dvc.result()
+        random_number = zn.outs()
 
-        def __call__(self, max_number):
+        def __init__(self, max_number=None):
             """Pass tracked arguments"""
             self.max_number = max_number
 
@@ -44,15 +42,14 @@ DVC Options, such as parameters, input dependencies and output files are class a
             """Command to be run by DVC"""
             self.random_number = randrange(self.max_number)
 
-This stage can be used via
+This Node can then be saved as a DVC stage
 
 .. code-block:: py
 
-    hello_world = HelloWorld()
-    hello_world(max_number=512)
+    HelloWorld(max_number=512).write_dvc()
 
 which builds the DVC stage and can be used e.g., through :code:`dvc repro`.
-The results can then be accessed easily via :code:`HelloWorld(load=True).random_number`.
+The results can then be accessed easily via :code:`HelloWorld.load().random_number`.
 
 More detailed examples and further information can be found in the `ZnTrack Documentation <https://zntrack.readthedocs.io/en/latest/>`_.
 
