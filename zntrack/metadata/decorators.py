@@ -11,7 +11,7 @@ Description:
 
 from time import time
 
-from .base import MetaData
+from zntrack.metadata.base import MetaData
 
 
 class TimeIt(MetaData):

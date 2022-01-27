@@ -14,7 +14,7 @@ import sys
 
 import znjson
 
-from .core import Node
+from .core import Node, SpawnNode
 from .interface import DVCInterface
 from .project import ZnTrackProject
 from .utils import config
@@ -32,7 +32,7 @@ except AttributeError:
     pass
 
 #
-__all__ = ["Node", "ZnTrackProject", "DVCInterface", "config"]
+__all__ = ["Node", "ZnTrackProject", "DVCInterface", "config", "SpawnNode"]
 
 __version__ = "0.3.4"
 

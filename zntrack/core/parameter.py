@@ -79,6 +79,7 @@ class ZnTrackOption(Descriptor):
         """Get the name of the file this ZnTrackOption will save its values to"""
         filename_dict = {
             "params": File(path=pathlib.Path("params.yaml"), key=instance.node_name),
+            "iterable": File(path=pathlib.Path("params.yaml"), key=instance.node_name),
             "deps": File(path=pathlib.Path("zntrack.json"), key=instance.node_name),
             "dvc": File(
                 path=pathlib.Path("zntrack.json"),

@@ -9,6 +9,7 @@ import typing
 
 from zntrack.core.parameter import ZnTrackOption
 from zntrack.utils import config
+from zntrack.utils.utils import dict_hash
 
 from .jupyter import jupyter_class_to_file
 
@@ -125,6 +126,14 @@ class DescriptorList:
                 )
             return types_dict
         return {x.name: getattr(self.parent, x.name) for x in data}
+
+    @property
+    def full_data_dict(self) -> dict:
+        return {x.name: getattr(self.parent, x.name) for x in self.data}
+
+    @property
+    def hash(self) -> str:
+        return dict_hash(self.full_data_dict)[1:]  # remove the sign
 
 
 class GraphWriter:

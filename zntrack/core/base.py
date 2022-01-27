@@ -112,11 +112,11 @@ class Node(GraphWriter):
             if name not in (None, cls.__name__):
                 instance.node_name = name
 
-        instance._load()
-
         if config.nb_name is not None:
             # TODO maybe check if it exists and otherwise keep default?
             instance._module = f"{config.nb_class_path}.{cls.__name__}"
+
+        instance._load()
 
         return instance
 

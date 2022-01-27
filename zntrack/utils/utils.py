@@ -9,11 +9,14 @@ Copyright Contributors to the Zincware Project.
 Description:
 """
 
+import base64
+import hashlib
 import json
 import logging
 import os
 import shutil
 import tempfile
+from typing import Any, Dict
 
 import znjson
 
@@ -92,3 +95,40 @@ def deprecated(reason, version="v0.0.0"):
 def decode_dict(value):
     """Decode dict that was loaded without znjson"""
     return json.loads(json.dumps(value), cls=znjson.ZnDecoder)
+
+
+def dict_hash(dictionary: Dict[str, Any], length: int = 22, md5: bool = False) -> str:
+    """Convert dictionary to a (truncated) md5 hash
+
+    Parameters
+    ----------
+    dictionary: dict
+        any json serializable dictionary
+    length: int, default=22
+        length of the hash. The max length is 24, but the hash value can be
+        truncated for convenience and e.g. shorter file names
+    md5: bool, default=False
+        instead of pythons hash use md5 hash
+
+    References
+    ----------
+    https://www.doc.ic.ac.uk/~nuric/coding/how-to-hash-a-dictionary-in-python.html
+
+    Returns
+    -------
+    md5_hash_base64: str
+        The base64 encoded and truncated md5 hash of the dictionary
+
+    """
+    encoded_dict = json.dumps(dictionary, sort_keys=True).encode()
+    if md5:
+        md5_hash = hashlib.md5()
+
+        md5_hash.update(encoded_dict)
+        md5_hash_base64 = base64.b64encode(md5_hash.digest())
+        # convert to string
+        md5_hash_base64 = md5_hash_base64.decode("utf-8")
+
+        return md5_hash_base64[:length]
+    else:
+        return str(hash(encoded_dict))[:length]
