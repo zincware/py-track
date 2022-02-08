@@ -16,9 +16,9 @@ import subprocess
 import typing
 
 import dot4dict
+import znipy.utils
 
 from zntrack.core.dvcgraph import DVCRunOptions
-from zntrack.core.jupyter import jupyter_class_to_file
 from zntrack.utils import config, file_io, utils
 
 StrOrPath = typing.Union[str, pathlib.Path]
@@ -188,8 +188,11 @@ def nodify(
             if nb_name is not None:
                 module = f"{config.nb_class_path}.{func.__name__}"
 
-                jupyter_class_to_file(
-                    silent=silent, nb_name=nb_name, module_name=func.__name__
+                znipy.utils.jupyter_class_to_file(
+                    silent=silent,
+                    nb_name=nb_name,
+                    module_name=func.__name__,
+                    nb_class_path=config.nb_class_path,
                 )
             else:
                 module = utils.module_handler(func)

@@ -8,7 +8,7 @@ Copyright Contributors to the Zincware Project.
 
 Description: Standard python init file for the core directory
 """
-from .base import Node
-from .parameter import ZnTrackOption
+from zntrack.core.base import Node
+from zntrack.core.parameter import ZnTrackOption
 
 __all__ = ["Node", "ZnTrackOption"]

@@ -12,6 +12,7 @@ Description: Standard python init file for the main directory
 import logging
 import sys
 
+import znipy
 import znjson
 
 from zntrack.core.base import Node
@@ -20,6 +21,8 @@ from zntrack.interface.base import DVCInterface
 from zntrack.project.zntrack_project import ZnTrackProject
 from zntrack.utils.config import config
 from zntrack.utils.serializer import MethodConverter, ZnTrackTypeConverter
+
+znipy.register()
 
 # register converters
 znjson.config.ACTIVE_CONVERTER = [

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import pathlib
 
 from zntrack.core.dvcgraph import GraphWriter
 from zntrack.utils.config import config
@@ -110,7 +111,7 @@ class Node(GraphWriter):
         self.is_loaded = True
 
     @classmethod
-    def load(cls, name=None) -> Node:
+    def load(cls, name=None, notebook=None) -> Node:
         """
 
         Parameters
@@ -146,7 +147,15 @@ class Node(GraphWriter):
 
         if config.nb_name is not None:
             # TODO maybe check if it exists and otherwise keep default?
+            log.warning(
+                "DeprecationWarning: using config.nb_name instead of passing"
+                " load(notebook=<nb>). "
+            )
             instance._module = f"{config.nb_class_path}.{cls.__name__}"
+        if notebook is not None:
+            # only get the filename
+            module = pathlib.Path(notebook).stem
+            instance._module = module
 
         return instance
 

@@ -16,16 +16,46 @@ Notes
     Please consider using DVC.outs() and save them in a binary file format.
 
 """
+import dataclasses
 import importlib
 import inspect
 import logging
-from importlib import import_module
 
+import znipy
 import znjson
 
 from zntrack.core.base import Node
 
 log = logging.getLogger(__name__)
+
+
+@dataclasses.dataclass
+class SerializedClass:
+    """Store a serialized Class"""
+
+    module: str
+    cls: str
+
+    def get_cls(self):
+        """Import the serialized class from the given module"""
+        try:
+            module = importlib.import_module(self.module)
+            cls = getattr(module, self.cls)
+        except ModuleNotFoundError:
+            # Try loading from jupyter notebook if otherwise not available
+            module = znipy.NotebookLoader().load_module(self.module)
+            cls = getattr(module, self.cls)
+        return cls
+
+
+@dataclasses.dataclass
+class SerializedNode(SerializedClass):
+    name: str
+
+
+@dataclasses.dataclass
+class SerializedMethod(SerializedClass):
+    kwargs: dict = dataclasses.field(default_factory=dict)
 
 
 class ZnTrackTypeConverter(znjson.ConverterBase):
@@ -36,18 +66,17 @@ class ZnTrackTypeConverter(znjson.ConverterBase):
 
     def _encode(self, obj) -> dict:
         """Convert Node to serializable dict"""
-        return {
-            "module": obj.module,
-            "cls": obj.__class__.__name__,
-            "name": obj.node_name,
-        }
+        return dataclasses.asdict(
+            SerializedNode(
+                module=obj.module, cls=obj.__class__.__name__, name=obj.node_name
+            )
+        )
 
     def _decode(self, value: dict) -> Node:
         """return serialized Node"""
-        module = import_module(value["module"])
-        cls = getattr(module, value["cls"])
 
-        return cls.load(name=value["name"])
+        serialized_node = SerializedNode(**value)
+        return serialized_node.get_cls().load(name=serialized_node.name)
 
     def __eq__(self, other):
         """Overwrite check, because checking .zntrack equality"""
@@ -61,19 +90,18 @@ class MethodConverter(znjson.ConverterBase):
 
     def _encode(self, obj):
         """Serialize the object"""
-        methods = {
-            "module": obj.__class__.__module__,
-            "name": obj.__class__.__name__,
-            "kwargs": {},
-        }
+
+        serialized_method = SerializedMethod(
+            module=obj.__class__.__module__,
+            cls=obj.__class__.__name__,
+        )
 
         # If using Jupyter Notebooks
-
         # if the class is originally imported from main,
         #  it will be copied to the same module path as the
         #  ZnTrack Node source code.
-        if methods["module"] == "__main__":
-            methods["module"] = obj.znjson_module
+        if serialized_method.module == "__main__":
+            serialized_method.module = obj.znjson_module
 
         for key in inspect.signature(obj.__class__.__init__).parameters:
             if key == "self":
@@ -82,7 +110,7 @@ class MethodConverter(znjson.ConverterBase):
                 log.error(f"Can not convert {key}!")
                 continue
             try:
-                methods["kwargs"][key] = getattr(obj, key)
+                serialized_method.kwargs[key] = getattr(obj, key)
             except AttributeError as error:
                 raise AttributeError(
                     f"Could not find {key} in passed method! Please use "
@@ -90,14 +118,17 @@ class MethodConverter(znjson.ConverterBase):
                     " fits the method attributes"
                 ) from error
 
-        return methods
+        return dataclasses.asdict(serialized_method)
 
     def _decode(self, value: dict):
         """Deserialize the object"""
-        module = importlib.import_module(value["module"])
-        cls = getattr(module, value["name"])
 
-        return cls(**value["kwargs"])
+        if "name" in value:
+            # keep it backwards compatible
+            value["cls"] = value.pop("name")
+
+        serialized_method = SerializedMethod(**value)
+        return serialized_method.get_cls()(**serialized_method.kwargs)
 
     def __eq__(self, other) -> bool:
         """Identify if this serializer should be applied"""

@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 90
-experimental_string_processing = true
+preview = true
 
 [tool.isort]
 profile = 'black'

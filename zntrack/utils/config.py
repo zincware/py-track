@@ -26,10 +26,14 @@ class Config:
         The path where jupyter notebooks should write the *.py
     no_dvc: bool, default = False
         Do not write a dvc file when true.
+    notebook: str, default = None
+        Name of the Notebook to import the Node from. This uses direct notebook import
+        and does not write a python file to src.
     """
 
     debug: bool = False  # not implemented yet
     nb_name: str = None
+    notebook: str = None
     nb_class_path: Path = Path("src")
     no_dvc: bool = False
 

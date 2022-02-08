@@ -6,11 +6,11 @@ import pathlib
 import subprocess
 import typing
 
+import znipy.utils
+
 from zntrack.core.parameter import ZnTrackOption
 from zntrack.utils import config
 from zntrack.utils.utils import module_handler
-
-from .jupyter import jupyter_class_to_file
 
 log = logging.getLogger(__name__)
 
@@ -262,6 +262,7 @@ class GraphWriter:
         self,
         silent: bool = False,
         nb_name: str = None,
+        notebook: str = None,
         no_commit: bool = False,
         external: bool = False,
         always_changed: bool = False,
@@ -283,6 +284,10 @@ class GraphWriter:
             subprocess call.
         nb_name: str
             Notebook name when not using config.nb_name (this is not recommended)
+        notebook: str:
+            Name of the current jupyter notebook to import this Node from.
+            This is recommended over using config.nb_name or passing nb_name,
+            because it does not write a dedicated python file.
         no_commit: dvc parameter
         external: dvc parameter
         always_changed: dvc parameter
@@ -305,12 +310,22 @@ class GraphWriter:
         if nb_name is None:
             nb_name = config.nb_name
 
+        if notebook is not None and nb_name is not None:
+            raise ValueError("Can not use nb_name / config.nb_name and notebook args")
+
         # Jupyter Notebook
         if nb_name is not None:
+            log.warning(
+                "DeprecationWarning: using nb_name or config.nb_name instead of passing"
+                " write_graph(notebook=<nb>). "
+            )
             self._module = f"{config.nb_class_path}.{self.__class__.__name__}"
 
-            jupyter_class_to_file(
-                silent=silent, nb_name=nb_name, module_name=self.__class__.__name__
+            znipy.utils.jupyter_class_to_file(
+                silent=silent,
+                nb_name=nb_name,
+                module_name=self.__class__.__name__,
+                nb_class_path=config.nb_class_path,
             )
 
         self.save()
@@ -363,10 +378,17 @@ class GraphWriter:
 
         # Add command to run the script
         cls_name = self.__class__.__name__
-        script.append(
-            f"""{self.python_interpreter} -c "from {self.module} import {cls_name}; """
-            f"""{cls_name}.load(name='{self.node_name}').run_and_save()" """
-        )
+        if notebook is not None:
+            script.append(
+                f"""{self.python_interpreter} -c "from znipy import NotebookLoader; """
+                f"""module = NotebookLoader().load_module('{notebook}'); """
+                f"""module.{cls_name}.load(name='{self.node_name}').run_and_save()" """
+            )
+        else:
+            script.append(
+                f"""{self.python_interpreter} -c "from {self.module} import {cls_name};"""
+                f"""{cls_name}.load(name='{self.node_name}').run_and_save()" """
+            )
         log.debug(f"running script: {' '.join([str(x) for x in script])}")
 
         log.debug(

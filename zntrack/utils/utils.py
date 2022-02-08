@@ -115,10 +115,11 @@ def module_handler(obj) -> str:
     if obj.__module__ == "__main__":
         if pathlib.Path(sys.argv[0]).stem == "ipykernel_launcher":
             # special case for e.g. testing
+            if config.notebook is not None:
+                return pathlib.Path(config.notebook).stem
             return obj.__module__
         return pathlib.Path(sys.argv[0]).stem
-    else:
-        return obj.__module__
+    return obj.__module__
 
 
 def check_type(obj, types, allow_iterable=False, allow_none=False) -> bool:

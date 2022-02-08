@@ -127,7 +127,7 @@ def test_created_files(proj_path):
         "_type": "zn.method",
         "value": {
             "module": "test_zn_methods",
-            "name": "ExampleMethod",
+            "cls": "ExampleMethod",
         },
     }
     assert params_dict["SingleNode"]["data_class"] == {"param1": 1, "param2": 2}
