@@ -44,7 +44,7 @@ class SingleNodeListOut(Node):
 
 
 def test_load_dvc_outs(proj_path):
-    SingleNode(path_x="test", name="1500").write_graph(no_exec=False)
+    SingleNode(path_x="test", name="1500").write_graph(run=True)
 
     assert SingleNode.load(name="1500").path1 == pathlib.Path("test.json")
 
@@ -52,7 +52,7 @@ def test_load_dvc_outs(proj_path):
 def test_multiple_outs(proj_path):
     SingleNodeListOut(
         paths=[pathlib.Path("test_1.txt"), pathlib.Path("test_2.txt")]
-    ).write_graph(no_exec=False)
+    ).write_graph(run=True)
 
     assert pathlib.Path("test_1.txt").read_text() == "Lorem Ipsum"
     assert pathlib.Path("test_2.txt").read_text() == "Lorem Ipsum"

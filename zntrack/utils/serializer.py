@@ -106,6 +106,7 @@ class NodeAttributeConverter(znjson.ConverterBase):
             module=node_attribute.module, cls=node_attribute.cls, name=node_attribute.name
         )
         node = serialized_node.get_cls().load(name=node_attribute.name)
+        log.debug(f"--> Resolving NodeAttribute {node_attribute}.")
         return getattr(node, node_attribute.attribute)
 
 

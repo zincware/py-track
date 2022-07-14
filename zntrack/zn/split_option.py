@@ -134,11 +134,14 @@ class SplitZnTrackOption(ZnTrackOption):
             cls_dict = cls_dict[instance.node_name][self.name]
 
             if isinstance(cls_dict, list):
-                value = [combine_values(*x) for x in zip(cls_dict, params_values)]
+                values = [combine_values(*x) for x in zip(cls_dict, params_values)]
             else:
-                value = combine_values(cls_dict, params_values)
+                values = combine_values(cls_dict, params_values)
 
-            log.debug(f"Loading {instance.node_name} from {file}: ({value})")
-            return value
+            if isinstance(values, (list, tuple)):
+                log.debug(f"Loading {instance.node_name} from {file}: ({values[:3]} ...)")
+            else:
+                log.debug(f"Loading {instance.node_name} from {file}: ({values})")
+            return values
         except (AttributeError, KeyError, TypeError, FileNotFoundError):
             return super().get_data_from_files(instance)

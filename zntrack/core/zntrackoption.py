@@ -102,7 +102,7 @@ class ZnTrackOption(descriptor.Descriptor):
         return None
 
     def __repr__(self):
-        return f"{self.__class__}({hex(id(self))}) for <{self.dvc_option}>"
+        return f"{super().__repr__()} for <{self.__str__()}>"
 
     def __str__(self):
         return f"{self.dvc_option} / {self.name}"
@@ -201,6 +201,8 @@ class ZnTrackOption(descriptor.Descriptor):
             values = utils.decode_dict(file_content[instance.node_name][self.name])
         else:
             values = utils.decode_dict(file_content[self.name])
-
-        log.debug(f"Loading {instance.node_name} from {file}: ({values})")
+        if isinstance(values, (list, tuple)):
+            log.debug(f"Loading {instance.node_name} from {file}: ({values[:3]} ...)")
+        else:
+            log.debug(f"Loading {instance.node_name} from {file}: ({values})")
         return values

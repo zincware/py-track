@@ -207,3 +207,39 @@ def test_err_get_origin(proj_path):
 
     with pytest.raises(AttributeError):
         get_origin(ModifyNumber.load(), "inputs")
+
+
+class ModifyNumberWithAssert(Node):
+    inputs = zn.deps()
+    outputs = zn.outs()
+    use_getdeps: bool = zn.params()
+
+    _inputs_hash = -1
+
+    def post_init(self):
+        if self.use_getdeps:
+            self.inputs = getdeps(self.inputs, "number")
+        else:
+            self._inputs_hash = self.inputs.__repr__()
+
+    def run(self):
+        assert self._inputs_hash == self.inputs.__repr__()
+        self.outputs = self.inputs
+        assert self._inputs_hash == self.inputs.__repr__()
+
+
+@pytest.mark.parametrize("use_getdeps", (True, False))
+def test_get_origin_internals(proj_path, use_getdeps):
+    """Test to fix the weird behavior of get_deps"""
+    sd = SeedNumber(inputs=20)
+    sd.write_graph(run=True)
+    if use_getdeps:
+        ModifyNumberWithAssert(inputs=sd, use_getdeps=use_getdeps).write_graph(run=True)
+    else:
+        ModifyNumberWithAssert(inputs=sd @ "number", use_getdeps=use_getdeps).write_graph(
+            run=True
+        )
+
+    node_attr = get_origin(ModifyNumberWithAssert.load(), "inputs")
+    assert isinstance(node_attr, NodeAttribute)
+    assert node_attr.name == "SeedNumber"
