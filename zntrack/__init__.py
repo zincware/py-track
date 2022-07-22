@@ -7,6 +7,7 @@ import znjson
 from zntrack.core.base import Node
 from zntrack.core.functions.decorator import NodeConfig, nodify
 from zntrack.interface.base import DVCInterface
+from zntrack.metadata.collectors import NodeInfo, RunInfo
 from zntrack.project.zntrack_project import ZnTrackProject
 from zntrack.utils.config import config
 from zntrack.utils.serializer import (
@@ -27,6 +28,8 @@ __all__ = [
     nodify.__name__,
     NodeConfig.__name__,
     "getdeps",
+    NodeInfo.__name__,
+    RunInfo.__name__,
 ]
 
 __version__ = importlib.metadata.version("zntrack")

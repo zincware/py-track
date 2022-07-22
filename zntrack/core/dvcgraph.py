@@ -12,6 +12,7 @@ from zntrack import descriptor, utils
 from zntrack.core.jupyter import jupyter_class_to_file
 from zntrack.core.zntrackoption import ZnTrackOption
 from zntrack.descriptor import BaseDescriptorType
+from zntrack.metadata.collectors import NodeInfo, RunInfo
 from zntrack.zn import Nodes as zn_nodes
 from zntrack.zn import params as zn_params
 from zntrack.zn.dependencies import NodeAttribute
@@ -113,56 +114,6 @@ def handle_dvc(value, dvc_args) -> list:
     return [f(x) for x in value for f in (option_func, posix_func)]
 
 
-def filter_ZnTrackOption(
-    data,
-    cls,
-    zn_type: typing.Union[utils.ZnTypes, typing.List[utils.ZnTypes]],
-    return_with_type=False,
-    allow_none: bool = False,
-) -> dict:
-    """Filter the descriptor instances by zn_type
-
-    Parameters
-    ----------
-    data: List[ZnTrackOption]
-        The ZnTrack options to query through
-    cls:
-        The instance the ZnTrack options are attached to
-    zn_type: str
-        The zn_type of the descriptors to gather
-    return_with_type: bool, default=False
-        return a dictionary with the Descriptor.dvc_option as keys
-    allow_none: bool, default=False
-        Use getattr(obj, name, None) instead of getattr(obj, name) to yield
-        None when an AttributeError occurs.
-
-    Returns
-    -------
-    dict:
-        either {attr_name: attr_value}
-        or
-        {descriptor.dvc_option: {attr_name: attr_value}}
-
-    """
-    if not isinstance(zn_type, list):
-        zn_type = [zn_type]
-    data = [x for x in data if x.zn_type in zn_type]
-    if return_with_type:
-        types_dict = {x.dvc_option: {} for x in data}
-        for entity in data:
-            if allow_none:
-                # avoid AttributeError
-                value = getattr(cls, entity.name, None)
-            else:
-                value = getattr(cls, entity.name)
-            types_dict[entity.dvc_option].update({entity.name: value})
-        return types_dict
-    if allow_none:
-        return {x.name: getattr(cls, x.name, None) for x in data}
-    # avoid AttributeError
-    return {x.name: getattr(cls, x.name) for x in data}
-
-
 def prepare_dvc_script(
     node_name,
     dvc_run_option: DVCRunOptions,
@@ -211,13 +162,18 @@ def prepare_dvc_script(
     return script
 
 
+ZN_COLLECT_TYPE = typing.Type[
+    typing.Union[NodeInfo, RunInfo, descriptor.BaseDescriptorType]
+]
+
+
 class ZnTrackInfo:
     """Helping class for access to ZnTrack information"""
 
     def __init__(self, parent):
         self._parent = parent
 
-    def collect(self, zntrackoption: typing.Type[descriptor.BaseDescriptorType]) -> dict:
+    def collect(self, zntrackoption: ZN_COLLECT_TYPE) -> dict:
         """Collect the values of all ZnTrackOptions of the passed type
 
         Parameters
@@ -236,6 +192,13 @@ class ZnTrackInfo:
                 "collect only supports single ZnTrackOptions. Found"
                 f" {zntrackoption} instead."
             )
+
+        if zntrackoption in (NodeInfo, RunInfo):
+            for option in dir(type(self._parent)):
+                value = getattr(type(self._parent), option)
+                if isinstance(value, zntrackoption):
+                    return {option: value}
+
         options = descriptor.get_descriptors(zntrackoption, self=self._parent)
         return {x.name: x.__get__(self._parent) for x in options}
 
@@ -441,7 +404,7 @@ class GraphWriter:
         custom_args = []
         dependencies = []
         # Handle Parameter
-        params_list = filter_ZnTrackOption(
+        params_list = utils.helpers.filter_ZnTrackOption(
             data=self._descriptor_list, cls=self, zn_type=[utils.ZnTypes.PARAMS]
         )
         if len(params_list) > 0:

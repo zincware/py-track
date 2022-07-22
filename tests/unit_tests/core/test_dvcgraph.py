@@ -7,7 +7,6 @@ from zntrack.core.dvcgraph import (
     DVCRunOptions,
     GraphWriter,
     ZnTrackInfo,
-    filter_ZnTrackOption,
     handle_deps,
     handle_dvc,
     prepare_dvc_script,
@@ -117,14 +116,14 @@ def test__descriptor_list():
 def test_descriptor_list_filter():
     example = ExampleClassWithParams()
 
-    assert filter_ZnTrackOption(
+    assert utils.helpers.filter_ZnTrackOption(
         data=example._descriptor_list, cls=example, zn_type=utils.ZnTypes.PARAMS
     ) == {
         "param1": 1,
         "param2": 2,
     }
 
-    assert filter_ZnTrackOption(
+    assert utils.helpers.filter_ZnTrackOption(
         data=example._descriptor_list,
         cls=example,
         zn_type=utils.ZnTypes.PARAMS,

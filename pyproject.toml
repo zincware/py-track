@@ -1,10 +1,11 @@
 [tool.poetry]
 name = "ZnTrack"
-version = "0.4.2"
+version = "0.4.3"
 description = "Create, Run and Benchmark DVC Pipelines in Python"
 authors = ["zincwarecode <zincwarecode@gmail.com>"]
 license = "Apache-2.0"
 keywords=["data-science", "data-version-control", "machine-learning", "reproducibility", "collaboration"]
+readme = "README.md"
 
 
 [tool.poetry.dependencies]

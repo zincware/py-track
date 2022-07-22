@@ -3,7 +3,6 @@ from functools import partial
 from typing import Callable
 
 from zntrack import utils
-from zntrack.core.dvcgraph import filter_ZnTrackOption
 
 
 class MetaData(ABC):
@@ -51,7 +50,7 @@ class MetaData(ABC):
         try:
             metadata_attr, metadata = next(
                 iter(
-                    filter_ZnTrackOption(
+                    utils.helpers.filter_ZnTrackOption(
                         data=cls._descriptor_list,
                         cls=cls,
                         zn_type=utils.ZnTypes.METADATA,

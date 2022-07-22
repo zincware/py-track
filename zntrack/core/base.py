@@ -8,6 +8,7 @@ from zntrack import utils
 from zntrack.core.dvcgraph import GraphWriter
 from zntrack.core.zntrackoption import ZnTrackOption
 from zntrack.descriptor import get_descriptors
+from zntrack.metadata.collectors import NodeInfo
 from zntrack.zn.dependencies import NodeAttribute, getdeps
 
 log = logging.getLogger(__name__)
@@ -110,6 +111,11 @@ class Node(GraphWriter, metaclass=LoadViaGetItem):
         for data in self._descriptor_list:
             if data.zn_type == utils.ZnTypes.DEPS:
                 update_dependency_options(data.default_value)
+
+        node_info = self.zntrack.collect(NodeInfo)
+        if len(node_info) != 0:
+            node_info = next(iter(node_info.values()))
+            node_info.update_from_docstring(self.__doc__)
 
     @utils.deprecated(
         reason=(
@@ -225,7 +231,7 @@ class Node(GraphWriter, metaclass=LoadViaGetItem):
     def _update_options(self, lazy=None):
         """Update all ZnTrack options inheriting from ZnTrackOption
 
-        This will overwrite the value in __dict__ even it the value was changed
+        This will overwrite the value in __dict__ even if the value was changed
         """
         if lazy is None:
             lazy = utils.config.lazy
