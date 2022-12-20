@@ -55,7 +55,7 @@ def write_file(file: pathlib.Path, value: dict, mkdir: bool = True):
         file.parent.mkdir(exist_ok=True, parents=True)
 
     if file.suffix in [".yaml", ".yml"]:
-        file.write_text(yaml.safe_dump(value, indent=4))
+        file.write_text(yaml.safe_dump(value, indent=4, default_style="|"))
     elif file.suffix == ".json":
         file.write_text(json.dumps(value, indent=4, cls=znjson.ZnEncoder))
     else:

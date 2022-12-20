@@ -93,7 +93,11 @@ def test_save(run):
             ]
             assert params_mock().write.mock_calls == [
                 call(yaml.safe_dump({})),  # clear everything first
-                call(yaml.safe_dump({"ExampleFullNode": {"params": 10}}, indent=4)),
+                call(
+                    yaml.safe_dump(
+                        {"ExampleFullNode": {"params": 10}}, indent=4, default_style="|"
+                    )
+                ),
             ]
 
 

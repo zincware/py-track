@@ -38,7 +38,9 @@ def test_save_file_yaml():
 
         args, kwargs = open_mock.call_args
         assert args[0] == pathlib.Path("example.yaml")
-        open_mock().write.assert_called_once_with(yaml.safe_dump({"a": "b"}, indent=4))
+        open_mock().write.assert_called_once_with(
+            yaml.safe_dump({"a": "b"}, indent=4, default_style="|")
+        )
 
 
 def test_save_file_yaml_mkdir(tmp_path):
@@ -58,7 +60,9 @@ def test_save_file_yml():
 
         args, kwargs = open_mock.call_args
         assert args[0] == pathlib.Path("example.yml")
-        open_mock().write.assert_called_once_with(yaml.safe_dump({"a": "b"}, indent=4))
+        open_mock().write.assert_called_once_with(
+            yaml.safe_dump({"a": "b"}, indent=4, default_style="|")
+        )
 
 
 def test_save_file_txt():
@@ -213,6 +217,7 @@ def test_update_config_file_yaml():
         yaml.safe_dump(
             {"Node1": {"param1": 1, "param2": 42}, "Node2": {"param1": 3, "param2": 4}},
             indent=4,
+            default_style="|",
         )
     )
 
@@ -240,7 +245,9 @@ def test_update_desc(desc):
 
     if desc is not None:
         dvc_dict["stages"]["MyNode"]["desc"] = desc
-        open_mock().write.assert_called_once_with(yaml.safe_dump(dvc_dict, indent=4))
+        open_mock().write.assert_called_once_with(
+            yaml.safe_dump(dvc_dict, indent=4, default_style="|")
+        )
     else:
         assert not open_mock().called
 
