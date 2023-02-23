@@ -5,6 +5,8 @@ import json
 import logging
 import os
 import pathlib
+import platform
+import select
 import shutil
 import subprocess
 import sys
@@ -18,6 +20,27 @@ from zntrack.utils.config import config
 from zntrack.utils.exceptions import DVCProcessError
 
 log = logging.getLogger(__name__)
+
+
+def timed_input(text, timeout=10, default=None, condition=None):
+    """Input with a timeout.
+
+    This input is not enforced and returns the default value if anything goes wrong.
+    """
+    try:
+        if platform.system() == "Windows":
+            log.debug("Windows does not support select.select - skipping.")
+            return default
+        print(text)
+        inputs, _, _ = select.select([sys.stdin], [], [], timeout)
+        if inputs:
+            user_input = sys.stdin.readline().strip()
+            if condition is not None:
+                return condition(user_input)
+            return user_input
+        return default
+    except:  # noqa: E722
+        return default
 
 
 def cwd_temp_dir(required_files=None) -> tempfile.TemporaryDirectory:

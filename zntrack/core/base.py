@@ -770,17 +770,28 @@ class Node(NodeBase, metaclass=LoadViaGetItem):
                 remove = any(isinstance(err, e) for e in remove_on)
                 move = any(isinstance(err, e) for e in move_on)
                 # finally -> ...
+                remove = utils.utils.timed_input(
+                    text=(
+                        "Do you want to remove the operating directory?"
+                        f" [y/n]({'y' if remove else 'n'}): "
+                    ),
+                    default=remove,
+                    timeout=10,
+                    condition=lambda x: x.lower() in ["y", "yes", "j"],
+                )
                 raise err
             finally:
                 # Save e.g. `zn.outs` before stopping.
-                self.save(results=True)
-                self.nwd = nwd
                 if remove:
                     log.info(f"Removing operating directory: {nwd_new}")
                     shutil.rmtree(nwd_new)
-                elif move:
+                    return
+                self.save(results=True)
+                self.nwd = nwd
+                if move:  # only  called if Exception in move_on
                     log.info(f"Moving files from '{nwd_new}' to {nwd}")
                     utils.move_nwd(nwd_new, nwd)
+                    return
 
             log.info(f"Finished successfully. Moving files from {nwd_new} to {nwd}")
             utils.move_nwd(nwd_new, nwd)
