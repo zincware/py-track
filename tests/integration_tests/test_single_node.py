@@ -387,8 +387,23 @@ def test_collect(proj_path):
         ExampleNode01["TestNode"].zntrack.collect((zn.params, zn.outs))
 
 
+
+class OnlyOutsNode(Node):
+    _hash = zn.Hash()
+    outs: pathlib.Path = dvc.outs()
+
+    def run(self):
+        if self.outs is not None:
+            self.outs.touch()
+
+
+def test_OnlyOutsNode(proj_path):
+    OnlyOutsNode(outs=pathlib.Path("test_node")).write_graph(run=True)
+    OnlyOutsNode(name="empty").write_graph(run=True)  # this is the actual test
+
 def test__graph_entry_exists(proj_path):
     ExampleNode01(inputs="Hello World", name="TestNode").write_graph()
 
     assert ExampleNode01.load()._graph_entry_exists is False
     assert ExampleNode01["TestNode"]._graph_entry_exists
+
