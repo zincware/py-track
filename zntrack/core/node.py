@@ -10,7 +10,7 @@ import typing
 
 import dvc.api
 import dvc.cli
-import znflow
+import znflow.utils
 import zninit
 import znjson
 
@@ -51,6 +51,12 @@ class NodeStatus:
             url=self.remote,
             rev=self.rev,
         )
+
+
+class _UpdateConnections(znflow.utils.IterableHandler):
+    # TODO use znflow.utils.UpdateConnectors when available instead
+    def default(self, value):
+        return value.result if isinstance(value, znflow.Connection) else value
 
 
 class _NameDescriptor(zninit.Descriptor):
@@ -164,7 +170,13 @@ class Node(zninit.ZnInit, znflow.Node):
         with config.updated_config(**kwargs):
             # TODO: it would be much nicer not to use a global config object here.
             for attr in zninit.get_descriptors(Field, self=self):
-                attr.load(self)
+                value = getattr(self, attr.name, None)
+                updater = _UpdateConnections()
+                result = updater(value)
+                if updater.updated:
+                    setattr(self, attr.name, result)
+                else:
+                    attr.load(self)
 
         # TODO: documentation about _post_init and _post_load_ and when they are called
         self._post_load_()
