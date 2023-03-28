@@ -9,6 +9,7 @@ import tempfile
 import unittest.mock
 
 import dvc.cli
+import git
 
 from zntrack.utils import cli
 from zntrack.utils.config import config
@@ -204,3 +205,27 @@ def cwd_temp_dir(required_files=None) -> tempfile.TemporaryDirectory:
     os.chdir(temp_dir.name)
 
     return temp_dir
+
+
+def convert_to_list(value) -> list:
+    """Convert value to a list if it is not already one.
+    
+    If 'value is None', return an empty list.
+    """
+    if not isinstance(value, (list, tuple)):
+        return [] if value is None else [value]
+    return value
+
+
+def update_gitignore(prefix) -> None:
+    """Add 'nodes/<prefix>_*' to the gitignore file, if not already there."""
+    ignore = f"nodes/{prefix}_*"
+
+    repo = git.Repo(".")
+    if repo.ignored(ignore):
+        return
+
+    gitignore = pathlib.Path(".gitignore")
+    with gitignore.open("a", encoding="utf-8") as file:
+        file.write("\n# ZnTrack operating directory \n")
+        file.write(f"{ignore}\n")
