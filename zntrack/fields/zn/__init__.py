@@ -566,6 +566,35 @@ class NodeField(Dependency):
         ]
 
 
+class MetricsDigitToDict(Output):
+    """Output field with conversion from digit to dict for 'dvc metrics'."""
+
+    def save(self, instance: "Node"):
+        """Save the field to disk.
+
+        Parameters
+        ----------
+        instance : Node
+            The node instance.
+        """
+        try:
+            value = self.get_value_except_lazy(instance)
+        except DataIsLazyError:
+            return
+
+        if isinstance(value, (float, int)):
+            # the output must be dict, otherwise 'dvc metrics show' won't work
+            log.warning(
+                f"WARNING: Converting metrics '{value}' to dict, such that it can be"
+                " displayed by DVC."
+            )
+            value = {self.name: value}
+
+        instance.nwd.mkdir(exist_ok=True, parents=True)
+        file = self.get_files(instance)[0]
+        file.write_text(json.dumps(value, cls=znjson.ZnEncoder, indent=4))
+
+
 def params(*args, **kwargs) -> Params:
     """Create a params field."""
     return Params(*args, **kwargs)
@@ -583,7 +612,7 @@ def outs() -> Output:
 
 def metrics() -> Output:
     """Create a metrics output field."""
-    return Output(dvc_option="metrics-no-cache")
+    return MetricsDigitToDict(dvc_option="metrics-no-cache")
 
 
 def plots(*args, **kwargs) -> Plots:
