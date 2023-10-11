@@ -45,7 +45,7 @@ scikit-learn = "^1.2.2"
 nbmake = "1.4.3"
 
 [tool.poetry.group.notebook.dependencies]
-jupyterlab = "^3.4.3"
+jupyterlab = ">=3.4.3,<5.0.0"
 
 [tool.poetry.group.docs.dependencies]
 furo = "^2022.12.7"
