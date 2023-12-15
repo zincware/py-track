@@ -80,7 +80,9 @@ class NodeStatus:
         Opening a relative path will use the Node's file system.
         Opening an absolute path will use the local file system.
         """
-        original_open = open
+        import builtins
+
+        original_open = builtins.open
         original_listdir = os.listdir
 
         def _open(file, *args, **kwargs):
@@ -92,6 +94,17 @@ class NodeStatus:
 
             return original_open(file, *args, **kwargs)
 
+        def _read_text(file, *args, **kwargs):
+            if file == "params.yaml":
+                with original_open(file, *args, **kwargs) as f:
+                    return f.read()
+
+            if not pathlib.Path(file).is_absolute():
+                return self.fs.read_text(file, *args, **kwargs)
+
+            with original_open(file, *args, **kwargs) as f:
+                return f.read()
+
         def _listdir(path, *args, **kwargs):
             if not pathlib.Path(path).is_absolute():
                 return self.fs.listdir(path, detail=False)
@@ -101,8 +114,9 @@ class NodeStatus:
         with unittest.mock.patch("builtins.open", _open):
             with unittest.mock.patch("__main__.open", _open):
                 with unittest.mock.patch("os.listdir", _listdir):
-                    # Jupyter Notebooks replace open with io.open
-                    yield
+                    with unittest.mock.patch("pathlib.Path.read_text", _read_text):
+                        with unittest.mock.patch("pathlib.Path.open", _open):
+                            yield
 
 
 class _NameDescriptor(zninit.Descriptor):

@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import git
 
@@ -24,8 +25,14 @@ def test_patch_open(proj_path):
     with node.state.magic_patch():
         with open(node.outs, "r") as f:
             assert f.read() == "Hello World"
+        assert pathlib.Path(node.outs).read_text() == "Hello World"
+        with pathlib.Path(node.outs).open("r") as f:
+            assert f.read() == "Hello World"
 
     with open(node.outs, "r") as f:
+        assert f.read() == "Lorem Ipsum"
+    assert pathlib.Path(node.outs).read_text() == "Lorem Ipsum"
+    with pathlib.Path(node.outs).open("r") as f:
         assert f.read() == "Lorem Ipsum"
 
     listdir = os.listdir(node.nwd)
