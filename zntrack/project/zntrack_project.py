@@ -304,7 +304,12 @@ class Project:
                 node.save(results=False)
         if not eager and repro:
             self.repro()
-            # TODO should we load the nodes here? Maybe, if lazy loading is implemented.
+            # load the nodes
+            for node_uuid in self.graph.get_sorted_nodes():
+                node = self.graph.nodes[node_uuid]["value"]
+                if node_names is not None and node.name not in node_names:
+                    continue
+                node.load()
 
         if auto_remove:
             self.auto_remove()

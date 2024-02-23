@@ -584,3 +584,16 @@ def test_magic_names(proj_path):
     zntrack.from_rev(node02.name).outs == "Dolor Sit"
     zntrack.from_rev(node03.name).outs == "Test01"
     zntrack.from_rev(grp_node03.name).outs == "Test02"
+
+
+def test_project_run_load(proj_path):
+    """Ensure Nodes are loaded after project is run from the same script."""
+
+    project = zntrack.Project()
+
+    with project:
+        node = zntrack.examples.ParamsToOuts(params="Lorem Ipsum")
+
+    project.run()
+
+    assert node.outs == "Lorem Ipsum"
