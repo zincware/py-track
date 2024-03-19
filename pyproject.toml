@@ -45,6 +45,8 @@ pytest-xdist = "^2"
 optuna = "^3"
 scikit-learn = "^1"
 nbmake = "^1"
+mypy = "^1.9.0"
+pandas-stubs = "^2.2.1.240316"
 
 [tool.poetry.group.notebook.dependencies]
 jupyterlab = "^3"
