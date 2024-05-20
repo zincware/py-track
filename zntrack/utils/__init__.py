@@ -225,7 +225,7 @@ def cwd_temp_dir(required_files=None) -> tempfile.TemporaryDirectory:
 class NodeName:
     """The name of a node."""
 
-    groups: list[str]
+    groups: znflow.Group
     name: str
     varname: str = None
     suffix: int = 0
@@ -235,7 +235,7 @@ class NodeName:
         """Get the node name."""
         name = []
         if self.groups is not None:
-            name.extend(self.groups)
+            name.extend(x for x in self.groups.names[0])
         if self.use_varname:
             name.append(self.varname)
         else:
@@ -255,7 +255,6 @@ class NodeName:
 
     def update_suffix(self, project: "Project", node: "Node") -> None:
         """Update the suffix."""
-        node_names = [x["value"].name for x in project.graph.nodes.values()]
         self.use_varname = project.magic_names
 
         node_names = []

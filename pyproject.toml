@@ -19,7 +19,7 @@ typer = "^0.7"
 dot4dict = "^0.1"
 zninit = "^0.1"
 znjson = "^0.2"
-znflow = "^0.1"
+znflow = "0.2.0a0"
 varname = "^0.13"
 # for Python3.12 compatibliity
 pyzmq = "^25"

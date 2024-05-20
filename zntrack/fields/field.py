@@ -36,6 +36,7 @@ class Field(zninit.Descriptor, abc.ABC):
     ----------
     dvc_option : str
         The dvc command option for this field.
+
     """
 
     dvc_option: str = None
@@ -49,6 +50,7 @@ class Field(zninit.Descriptor, abc.ABC):
         ----------
         instance : Node
             The Node instance to save the field for.
+
         """
         raise NotImplementedError
 
@@ -70,6 +72,7 @@ class Field(zninit.Descriptor, abc.ABC):
         -------
         list
             The affected files.
+
         """
         raise NotImplementedError
 
@@ -83,6 +86,7 @@ class Field(zninit.Descriptor, abc.ABC):
         lazy : bool, optional
             Whether to load the field lazily.
             This only applies to 'LazyField' classes.
+
         """
         try:
             instance.__dict__[self.name] = self.get_data(instance)
@@ -103,6 +107,7 @@ class Field(zninit.Descriptor, abc.ABC):
         -------
         typing.List[tuple]
             The stage add argument for this field.
+
         """
         return [
             (f"--{self.dvc_option}", pathlib.Path(x).as_posix())
@@ -127,6 +132,7 @@ class Field(zninit.Descriptor, abc.ABC):
         -------
         typing.List[str]
             The optional dvc commands.
+
         """
         return []
 
@@ -155,6 +161,18 @@ class Field(zninit.Descriptor, abc.ABC):
         # use the __dict__ to avoid the nwd replacement
         with open(config.files.zntrack, "w") as f:
             json.dump(zntrack_dict, f, indent=4, cls=encoder)
+
+    def get_zntrack_data(self, instance: "Node") -> dict:
+        """Get the data that will be written to the zntrack config file."""
+        return {}
+
+    def get_dvc_data(self, instance: "Node") -> dict:
+        """Get the data that will be written to the dvc config file."""
+        return {}
+
+    def get_params_data(self, instance: "Node") -> dict:
+        """Get the data that will be written to the params file."""
+        return {}
 
 
 class DataIsLazyError(Exception):

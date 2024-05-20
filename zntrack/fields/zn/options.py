@@ -103,10 +103,19 @@ class Params(Field):
     ----------
     dvc_option: str
         The DVC option to use. Default is "params".
+
     """
 
     dvc_option: str = "params"
     group = FieldGroup.PARAMETER
+
+    def get_params_data(self, instance: "Node") -> dict:
+        """Get the parameters data."""
+        return {self.name: getattr(instance, self.name)}
+
+    def get_dvc_data(self, instance: "Node") -> dict:
+        """Get the DVC data."""
+        return {"params": [instance.name]}
 
     def get_files(self, instance: "Node") -> list:
         """Get the list of files affected by this field.
@@ -115,6 +124,7 @@ class Params(Field):
         -------
         list
             A list of file paths.
+
         """
         return [config.files.params]
 
@@ -125,6 +135,7 @@ class Params(Field):
         ----------
         instance : Node
             The node instance associated with this field.
+
         """
         file = self.get_files(instance)[0]
 
@@ -161,6 +172,7 @@ class Params(Field):
         -------
         list
             A list of tuples containing the DVC option and the file path.
+
         """
         file = self.get_files(instance)[0]
         return [(f"--{self.dvc_option}", f"{file}:{instance.name}")]
@@ -171,6 +183,14 @@ class Output(LazyField):
 
     group = FieldGroup.RESULT
 
+    def get_dvc_data(self, instance: "Node") -> dict:
+        """Get the DVC data."""
+        return {"outs": [x.as_posix() for x in self.get_files(instance)]}
+
+    def get_zntrack_data(self, instance: "Node") -> dict:
+        """Get the zntrack data."""
+        return {self.name: pathlib.Path(f"$nwd$/{self.name}.json")}
+
     def __init__(self, dvc_option: str, **kwargs):
         """Create a new Output field.
 
@@ -180,6 +200,7 @@ class Output(LazyField):
             The DVC option used to specify the output file.
         **kwargs
             Additional arguments to pass to the parent constructor.
+
         """
         self.dvc_option = dvc_option
         super().__init__(**kwargs)
@@ -196,6 +217,7 @@ class Output(LazyField):
         -------
         list
             A list containing the path of the file.
+
         """
         return [get_nwd(instance) / f"{self.name}.json"]
 
@@ -206,6 +228,7 @@ class Output(LazyField):
         ----------
         instance : Node
             The node instance.
+
         """
         try:
             value = self.get_value_except_lazy(instance)
@@ -236,6 +259,7 @@ class Output(LazyField):
         -------
         list
             A list containing the DVC command for this field.
+
         """
         file = self.get_files(instance)[0]
         return [(f"--{self.dvc_option}", file.as_posix())]
@@ -246,6 +270,14 @@ class Plots(PlotsMixin, LazyField):
 
     dvc_option: str = "plots"
     group = FieldGroup.RESULT
+
+    def get_dvc_data(self, instance: "Node") -> dict:
+        """Get the DVC data."""
+        return {"plots": [x.as_posix() for x in self.get_files(instance)]}
+
+    def get_zntrack_data(self, instance: "Node") -> dict:
+        """Get the zntrack data."""
+        return {self.name: pathlib.Path(f"$nwd$/{self.name}.csv")}
 
     def get_files(self, instance) -> list:
         """Get the path of the file in the node directory."""

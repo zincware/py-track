@@ -5669,21 +5669,21 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 
 [[package]]
 name = "znflow"
-version = "0.1.14"
+version = "0.2.0a0"
 description = "A general purpose framework for building and running computational graphs."
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.9,<4.0"
 files = [
-    {file = "znflow-0.1.14-py3-none-any.whl", hash = "sha256:f94f21cdaece949754e6dd5beaedfb078b9331ca49e32d9a2dfaa4ac1d8f8324"},
-    {file = "znflow-0.1.14.tar.gz", hash = "sha256:bf85dbb4c816a3c1ae98ed62f75feb10a22032e8bccf8d016ee6d406873c9c03"},
+    {file = "znflow-0.2.0a0-py3-none-any.whl", hash = "sha256:e9d8e9a3efb800fbd06959883e84ed4ef0b6fb7304b2c1262d5eac4617aa9d39"},
+    {file = "znflow-0.2.0a0.tar.gz", hash = "sha256:0c4279d30a6999938aff58b867c9ea9b7166b3d24c87794891bca2e96ac7f04c"},
 ]
 
 [package.dependencies]
-matplotlib = ">=3.6.3,<4.0.0"
-networkx = ">=3.0,<4.0"
+matplotlib = ">=3,<4"
+networkx = ">=3,<4"
 
 [package.extras]
-dask = ["bokeh (>=2.4.2,<3.0.0)", "dask (>=2022.12.1,<2023.0.0)", "dask-jobqueue (>=0.8.1,<0.9.0)", "distributed (>=2022.12.1,<2023.0.0)"]
+dask = ["bokeh (>=2,<3)", "dask (>=2022,<2023)", "dask-jobqueue (>=0.8,<0.9)", "distributed (>=2022,<2023)"]
 
 [[package]]
 name = "zninit"
@@ -5713,4 +5713,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0.0"
-content-hash = "cd187c08029a8632406528c1ac370397729406979b98390499726e26ff411c46"
+content-hash = "c7b4e0d280aa028c18c82c2567c0417ab055412837d88e9a88c878b916d37b2c"
