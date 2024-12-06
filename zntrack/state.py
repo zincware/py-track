@@ -53,6 +53,9 @@ class NodeStatus:
     def nwd(self):
         if self.tmp_path is not None:
             return self.tmp_path
+        if "nwd" not in self.node.__dict__:
+            self.node.__dict__["nwd"] = get_nwd(self.node)
+
         return get_nwd(self.node)
 
     @property

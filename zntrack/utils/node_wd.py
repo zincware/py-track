@@ -58,7 +58,7 @@ def get_nwd(node: "Node") -> pathlib.Path:
         if (
             node.state.remote is None
             and node.state.rev is None
-            and node.state.state == NodeStatusEnum.FINISHED
+            and node.state.state != NodeStatusEnum.FINISHED
         ):
             nwd = pathlib.Path(NWD_PATH, node.name)
         else:
@@ -70,11 +70,11 @@ def get_nwd(node: "Node") -> pathlib.Path:
             except (FileNotFoundError, KeyError):
                 nwd = pathlib.Path(NWD_PATH, node.name)
 
-    if node.state.group is not None:
-        # strip the groups from node_name
-        to_replace = "_".join(node.state.group.name) + "_"
-        replacement = "/".join(node.state.group.name) + "/"
-        nwd = pathlib.Path(str(nwd).replace(to_replace, replacement))
+        if node.state.group is not None:
+            # strip the groups from node_name
+            to_replace = "_".join(node.state.group.name) + "_"
+            replacement = "/".join(node.state.group.name) + "/"
+            nwd = pathlib.Path(str(nwd).replace(to_replace, replacement))
 
     return nwd
 
