@@ -27,10 +27,14 @@ T = t.TypeVar("T", bound="Node")
 
 def _name_getter(self, name):
     value = self.__dict__[name]
-    if value is not None:
-        return value
-    # find the value based on the current project context
     graph = znflow.get_graph()
+
+    if value is not None:
+        if graph is not znflow.empty_graph and graph.active_group is not None:
+            pass
+        else:
+            return value
+    # find the value based on the current project context
     if graph is znflow.empty_graph:
         return self.__class__.__name__
 

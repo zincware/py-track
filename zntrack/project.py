@@ -54,7 +54,17 @@ class Project(znflow.DiGraph):
                     raise ValueError(
                         f"A node with the name '{node.__dict__['name']}' already exists."
                     )
-                node_names[node.uuid] = node.__dict__["name"]
+                if node.state.group is None:
+                    if self.active_group is not None:
+                        node_names[node.uuid] = (
+                            f"{'_'.join(self.active_group.names)}_{node.__dict__['name']}"
+                        )
+                    else:
+                        node_names[node.uuid] = node.__dict__["name"]
+                else:
+                    node_names[node.uuid] = (
+                        f"{'_'.join(node.state.group.name)}_{node.__dict__['name']}"
+                    )
             else:
                 if node.state.group is None:
                     if self.active_group is not None:
